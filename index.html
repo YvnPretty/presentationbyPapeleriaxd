@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Inventario - Papelería 81 Joma</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap');
+
+        /* ===== VARIABLES DE TEMA ===== */
+        :root {
+            --bg-base:     #09090b;
+            --bg-surface:  #18181b;
+            --bg-card:     #27272a;
+            --bg-header:   #18181b;
+            --border:      #3f3f46;
+            --text-main:   #ffffff;
+            --text-muted:  #a1a1aa;
+            --text-faint:  #52525b;
+            --accent:      #10b981;
+            --shadow:      rgba(0,0,0,0.5);
+        }
+
+        /* ===== TEMA CLARO ===== */
+        body.light-theme {
+            --bg-base:     #f0f4f8;
+            --bg-surface:  #ffffff;
+            --bg-card:     #e2e8f0;
+            --bg-header:   #ffffff;
+            --border:      #cbd5e1;
+            --text-main:   #0f172a;
+            --text-muted:  #334155;
+            --text-faint:  #64748b;
+            --accent:      #047857;
+            --shadow:      rgba(15,23,42,0.10);
+        }
+
+        /* ===== BASE ===== */
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            transition: background 0.35s ease, color 0.35s ease;
+        }
+
+        .title-font { font-family: 'Playfair Display', sans-serif; }
+
+        /* ===== HEADER / FOOTER ===== */
+        header, footer {
+            background-color: var(--bg-header) !important;
+            border-color: var(--border) !important;
+            transition: background 0.35s ease, border-color 0.35s ease;
+        }
+        body.light-theme footer,
+        body.light-theme footer * { color: var(--text-muted) !important; }
+
+        /* ===== TABS ===== */
+        .nav-tab { transition: all 0.3s ease; color: var(--text-muted); }
+        #tabs { background-color: var(--bg-surface) !important; transition: background 0.35s ease; }
+        .nav-tab.active {
+            border-bottom: 4px solid var(--accent);
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .nav-tab:hover { background-color: var(--bg-card) !important; }
+
+        /* ===== BOTONES HEADER ===== */
+        #btn-prev, #btn-next-wrap, #btn-fullscreen, #btn-theme { transition: background 0.35s ease, color 0.35s ease; }
+        #btn-prev { background-color: var(--bg-card) !important; color: var(--text-main) !important; }
+        #btn-prev:hover { filter: brightness(0.9); }
+
+        /* ===== SLIDE CONTAINER ===== */
+        #slide-container { background-color: var(--bg-base); transition: background 0.35s ease; }
+
+        /* ===== SPLIT SLIDE ===== */
+        .split-slide { display: flex; gap: 2rem; height: 100%; }
+
+        .content-side {
+            flex: 1; background-color: var(--bg-surface);
+            padding: 2rem; border-radius: 1rem;
+            border-top: 6px solid var(--accent);
+            transition: background 0.35s ease, border-color 0.35s ease;
+        }
+
+        .image-side {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            background-color: var(--bg-card); border-radius: 1rem; padding: 1rem;
+            transition: background 0.35s ease;
+        }
+
+        .image-side img {
+            max-height: 520px; max-width: 100%;
+            border-radius: 12px; box-shadow: 0 10px 30px var(--shadow);
+        }
+
+        .content-area { max-height: calc(100vh - 200px); overflow-y: auto; scrollbar-width: thin; }
+
+        /* ===== BOTON DE TEMA ===== */
+        #btn-theme {
+            width: 48px; height: 48px; display: flex; align-items: center;
+            justify-content: center; background-color: var(--bg-card);
+            border-radius: 1rem; font-size: 22px; cursor: pointer;
+            border: 1px solid var(--border);
+            transition: background 0.35s ease, border-color 0.35s ease, transform 0.2s;
+        }
+        #btn-theme:hover { transform: rotate(20deg) scale(1.1); }
+
+        /* ================================================================
+           TEMA CLARO - OVERRIDES COMPLETOS
+        ================================================================ */
+
+        /* Fondos */
+        body.light-theme .bg-zinc-950 { background-color: var(--bg-base) !important; }
+        body.light-theme .bg-zinc-900 { background-color: var(--bg-surface) !important; border: 1px solid var(--border) !important; }
+        body.light-theme .bg-zinc-800 { background-color: var(--bg-card) !important; border: 1px solid var(--border) !important; }
+
+        /* Texto - clases explicitas */
+        body.light-theme .text-white    { color: var(--text-main)  !important; }
+        body.light-theme .text-zinc-200 { color: var(--text-main)  !important; }
+        body.light-theme .text-zinc-300 { color: var(--text-muted) !important; }
+        body.light-theme .text-zinc-400 { color: var(--text-muted) !important; }
+        body.light-theme .text-zinc-500 { color: var(--text-faint) !important; }
+        body.light-theme .text-zinc-600 { color: var(--text-faint) !important; }
+
+        /* Texto dentro de cards zinc sin clase explicita */
+        body.light-theme .bg-zinc-900 h1, body.light-theme .bg-zinc-900 h2, body.light-theme .bg-zinc-900 h3,
+        body.light-theme .bg-zinc-900 p, body.light-theme .bg-zinc-900 li, body.light-theme .bg-zinc-900 span,
+        body.light-theme .bg-zinc-900 td, body.light-theme .bg-zinc-900 th { color: var(--text-main); }
+        body.light-theme .bg-zinc-800 h1, body.light-theme .bg-zinc-800 h2, body.light-theme .bg-zinc-800 h3,
+        body.light-theme .bg-zinc-800 p, body.light-theme .bg-zinc-800 li, body.light-theme .bg-zinc-800 span { color: var(--text-main); }
+
+        /* strong siempre hereda */
+        body.light-theme strong { color: var(--text-main) !important; }
+
+        /* Acento emerald */
+        body.light-theme .text-emerald-400,
+        body.light-theme .text-emerald-300,
+        body.light-theme .text-emerald-500 { color: var(--accent) !important; }
+
+        /* Rojo */
+        body.light-theme .text-red-400 { color: #b91c1c !important; }
+        body.light-theme .text-red-300 { color: #991b1b !important; }
+
+        /* Bordes */
+        body.light-theme .border-zinc-700,
+        body.light-theme .border-zinc-800 { border-color: var(--border) !important; }
+        body.light-theme .border-emerald-500 { border-color: var(--accent) !important; }
+
+        /* Tarjetas emerald bg */
+        body.light-theme [class*="bg-emerald-9"] {
+            background-color: #d1fae5 !important; border-color: #6ee7b7 !important;
+        }
+        body.light-theme [class*="bg-emerald-9"] h1, body.light-theme [class*="bg-emerald-9"] h2,
+        body.light-theme [class*="bg-emerald-9"] h3, body.light-theme [class*="bg-emerald-9"] p,
+        body.light-theme [class*="bg-emerald-9"] li, body.light-theme [class*="bg-emerald-9"] span { color: var(--text-main) !important; }
+        body.light-theme [class*="bg-emerald-9"] .text-emerald-400,
+        body.light-theme [class*="bg-emerald-9"] .text-emerald-300 { color: var(--accent) !important; }
+        body.light-theme [class*="bg-emerald-9"] .text-zinc-400,
+        body.light-theme [class*="bg-emerald-9"] .text-zinc-300 { color: var(--text-muted) !important; }
+        body.light-theme [class*="border-emerald-6"] { border-color: var(--accent) !important; }
+
+        /* Tarjetas rojo bg */
+        body.light-theme [class*="bg-red-9"],
+        body.light-theme [class*="bg-red-950"] { background-color: #fee2e2 !important; border-color: #fca5a5 !important; }
+        body.light-theme [class*="bg-red-9"] h1, body.light-theme [class*="bg-red-9"] h2,
+        body.light-theme [class*="bg-red-9"] h3, body.light-theme [class*="bg-red-9"] p,
+        body.light-theme [class*="bg-red-9"] li,  body.light-theme [class*="bg-red-9"] span,
+        body.light-theme [class*="bg-red-950"] h1, body.light-theme [class*="bg-red-950"] h2,
+        body.light-theme [class*="bg-red-950"] p   { color: var(--text-main) !important; }
+        body.light-theme [class*="bg-red-9"] .text-red-400,
+        body.light-theme [class*="bg-red-950"] .text-red-400 { color: #b91c1c !important; }
+        body.light-theme [class*="bg-red-9"] .text-red-300,
+        body.light-theme [class*="bg-red-950"] .text-red-300 { color: #991b1b !important; }
+        body.light-theme [class*="bg-red-9"] .text-zinc-300,
+        body.light-theme [class*="bg-red-9"] .text-zinc-200 { color: var(--text-muted) !important; }
+        body.light-theme [class*="border-red-5"] { border-color: #fca5a5 !important; }
+
+        /* Pastillas numero metodologia */
+        body.light-theme .bg-emerald-600 { background-color: var(--accent) !important; color: #fff !important; }
+        body.light-theme .bg-emerald-500 { background-color: #059669 !important; color: #fff !important; }
+        body.light-theme .bg-emerald-600 *,
+        body.light-theme .bg-emerald-500 * { color: #fff !important; }
+
+        /* Tabla */
+        body.light-theme table thead tr,
+        body.light-theme table tbody tr { border-color: var(--border) !important; }
+        body.light-theme table td, body.light-theme table th { color: var(--text-main) !important; }
+
+        /* Sombras */
+        body.light-theme .shadow-lg { box-shadow: 0 4px 20px var(--shadow) !important; }
+
+        /* ===== PANTALLA COMPLETA ===== */
+        body.fullscreen-mode header,
+        body.fullscreen-mode footer { display: none; }
+        body.fullscreen-mode .flex-1 { padding: 2rem; display: flex; align-items: center; justify-content: center; }
+        body.fullscreen-mode #slide-container { width: 100%; max-width: 100%; }
+    </style>
+</head>
+
+<body class="bg-zinc-950 text-white">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-zinc-900 border-b border-zinc-800 py-4 px-8 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 bg-emerald-500 rounded-2xl flex items-center justify-center text-2xl">📚</div>
+                <div>
+                    <h1 class="text-2xl font-semibold title-font">Papelería 81 Joma</h1>
+                    <p class="text-emerald-400 text-sm">Gestión de Inventario</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <button onclick="prevSlide()"
+                    class="flex items-center gap-2 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 rounded-2xl transition-colors">
+                    <i class="fas fa-chevron-left"></i>
+                    <span>Anterior</span>
+                </button>
+
+                <div class="flex gap-1 bg-zinc-900 p-1.5 rounded-3xl overflow-x-auto max-w-[620px]" id="tabs">
+                    <!-- Tabs generados por JS -->
+                </div>
+
+                <button onclick="nextSlide()"
+                    class="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 rounded-2xl transition-colors">
+                    <span>Siguiente</span>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+
+                <button id="btn-fullscreen" onclick="toggleFullscreen()" title="Pantalla completa (F)"
+                    class="w-12 h-12 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 rounded-2xl transition-colors text-emerald-400">
+                    <i class="fas fa-expand"></i>
+                </button>
+
+                <button id="btn-theme" onclick="toggleTheme()" title="Cambiar tema (T)">☀️</button>
+            </div>
+        </header>
+
+        <!-- Contenido Principal -->
+        <div class="flex-1 p-8" id="slide-container">
+            <!-- Slides se cargan aquí con JavaScript -->
+        </div>
+
+        <!-- Footer -->
+        <footer
+            class="bg-zinc-900 border-t border-zinc-800 py-4 px-8 flex items-center justify-between text-sm text-zinc-400">
+            <div>Equipo: Marco Antonio Aguilar Guerrero • César Meza Corella • Edgar Salazar Lopez • Misael Silva
+                Fragoso</div>
+            <div class="flex items-center gap-6">
+                <div>Fundamentos de Ingeniería de Software • IT Milpa Alta II</div>
+                <div class="flex items-center gap-2">
+                    <span id="current-slide">1</span>
+                    <span class="text-zinc-600">de</span>
+                    <span id="total-slides">18</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const slidesData = [
+            {
+                title: "Portada",
+                content: `
+                    <div class="max-w-6xl mx-auto flex gap-10 items-center py-6">
+                        <!-- Logo destacado -->
+                        <div class="flex flex-col items-center gap-6 min-w-[260px]">
+                            <div class="bg-zinc-900 rounded-3xl p-6 border border-emerald-500/40 shadow-[0_0_40px_rgba(16,185,129,0.18)]">
+                                <img src="images/logo_itma.png" alt="Logo ITMA II" style="width:200px;height:200px;object-fit:contain;border-radius:16px;">
+                            </div>
+                            <p class="text-emerald-400 font-semibold text-center text-lg tracking-wide">Instituto Tecnológico<br>de Milpa Alta II</p>
+                        </div>
+                        <!-- Información principal -->
+                        <div class="flex-1 text-left">
+                            <div class="inline-flex items-center gap-3 bg-zinc-900 px-8 py-4 rounded-2xl mb-6">
+                                <span class="text-5xl">📚</span>
+                                <h1 class="text-5xl title-font font-bold tracking-tight">Gestión de Inventario</h1>
+                            </div>
+                            <h2 class="text-3xl text-emerald-400 mb-8 font-semibold">Papelería 81 Joma</h2>
+                            <div class="bg-zinc-900 rounded-3xl p-8 space-y-4">
+                                <p class="text-xl"><span class="text-zinc-400">Materia:</span> <strong>Fundamentos de Ingeniería de Software</strong></p>
+                                <p class="text-xl"><span class="text-zinc-400">Docente:</span> <strong>Roldan Aquino Segura</strong></p>
+                                <div class="border-t border-zinc-700 pt-6 mt-2">
+                                    <p class="text-zinc-400 mb-2">Equipo:</p>
+                                    <p class="text-emerald-400 text-lg">Marco Antonio Aguilar Guerrero &nbsp;•&nbsp; César Meza Corella<br>Edgar Salazar Lopez &nbsp;•&nbsp; Misael Silva Fragoso</p>
+                                    <p class="mt-4 text-zinc-500 text-sm">27 de abril de 2026</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Introducción",
+                content: `
+                    <div class="max-w-5xl mx-auto">
+                        <div class="bg-zinc-900 border-l-4 border-emerald-500 rounded-2xl p-10 mb-8 shadow-lg">
+                            <h2 class="text-2xl font-bold text-emerald-400 mb-6 uppercase tracking-widest">Resumen</h2>
+                            <p class="text-xl leading-relaxed text-zinc-200 mb-6">
+                                El presente proyecto parte del análisis real del funcionamiento de la <strong class="text-white">Papelería la 81 Joma</strong>. A través de investigación de campo y entrevistas, se estudiaron su operación diaria, las reglas de negocio que rigen sus procesos, sus necesidades reales y la viabilidad tecnológica para implementar mejoras.
+                            </p>
+                            <p class="text-xl leading-relaxed text-zinc-200">
+                                Se concluyó que la solución óptima <strong class="text-emerald-400">no era la implementación de un sistema de Punto de Venta (POS) completo y complejo</strong>, debido al alto flujo de clientes y la necesidad de atención rápida. En su lugar, se propuso una <strong class="text-white">herramienta digital ligera</strong>, accesible desde dispositivos móviles, diseñada específicamente para gestionar listas de productos faltantes y organizar los pedidos nuevos de los clientes, optimizando así el control de inventario de manera ágil.
+                            </p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Contexto del Negocio",
+                content: `
+                    <div class="max-w-5xl mx-auto">
+                        <div class="bg-zinc-900 rounded-3xl p-10 border border-zinc-700">
+                            <h2 class="text-3xl title-font font-bold text-white mb-2">Papelería 81 Joma</h2>
+                            <p class="text-emerald-400 mb-8 text-lg">📍 Calle Michoacán Ote 5, Villa Milpa Alta, CDMX</p>
+                            <div class="grid grid-cols-2 gap-6">
+                                <div class="bg-zinc-800 rounded-2xl p-6 flex gap-4 items-start">
+                                    <span class="text-3xl">🛍️</span>
+                                    <div>
+                                        <h3 class="font-semibold text-lg mb-1">Variedad de productos</h3>
+                                        <p class="text-zinc-400">Tecnología, papelería, libretas y artículos escolares</p>
+                                    </div>
+                                </div>
+                                <div class="bg-zinc-800 rounded-2xl p-6 flex gap-4 items-start">
+                                    <span class="text-3xl">📱</span>
+                                    <div>
+                                        <h3 class="font-semibold text-lg mb-1">Servicios adicionales</h3>
+                                        <p class="text-zinc-400">Recargas telefónicas y copias/impresiones</p>
+                                    </div>
+                                </div>
+                                <div class="bg-emerald-900/40 border border-emerald-600/40 rounded-2xl p-6 flex gap-4 items-start">
+                                    <span class="text-3xl">⚡</span>
+                                    <div>
+                                        <h3 class="font-semibold text-lg mb-1 text-emerald-300">Alto flujo de clientes</h3>
+                                        <p class="text-zinc-400">Hasta <strong class="text-white">40 clientes/hora</strong> — atención rápida esencial</p>
+                                    </div>
+                                </div>
+                                <div class="bg-zinc-800 rounded-2xl p-6 flex gap-4 items-start">
+                                    <span class="text-3xl">🗓️</span>
+                                    <div>
+                                        <h3 class="font-semibold text-lg mb-1">Gestión actual</h3>
+                                        <p class="text-zinc-400">Control de inventario 100% visual, sin sistema digital</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Objetivos",
+                content: `
+                    <div class="max-w-5xl mx-auto">
+                        <div class="bg-zinc-900 border-l-4 border-emerald-500 rounded-2xl p-8 mb-8">
+                            <h2 class="text-xl font-bold text-emerald-400 mb-3 uppercase tracking-widest">Objetivo General</h2>
+                            <p class="text-xl text-zinc-200">Analizar el funcionamiento interno y proponer una solución digital viable que optimice la gestión de inventario sin entorpecer el flujo de ventas.</p>
+                        </div>
+                        <h2 class="text-xl font-bold text-zinc-400 uppercase tracking-widest mb-5">Objetivos Específicos</h2>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-zinc-900 rounded-2xl p-5 flex gap-4 items-start">
+                                <span class="text-emerald-400 text-2xl mt-1">01</span>
+                                <p class="text-zinc-200">Comprender el flujo de venta y atención al cliente de la papelería.</p>
+                            </div>
+                            <div class="bg-zinc-900 rounded-2xl p-5 flex gap-4 items-start">
+                                <span class="text-emerald-400 text-2xl mt-1">02</span>
+                                <p class="text-zinc-200">Identificar y documentar las reglas de negocio, tanto de cara al cliente como internas del personal.</p>
+                            </div>
+                            <div class="bg-zinc-900 rounded-2xl p-5 flex gap-4 items-start">
+                                <span class="text-emerald-400 text-2xl mt-1">03</span>
+                                <p class="text-zinc-200">Detectar los principales problemas en la gestión de inventario, específicamente el control de faltantes y pedidos.</p>
+                            </div>
+                            <div class="bg-zinc-900 rounded-2xl p-5 flex gap-4 items-start">
+                                <span class="text-emerald-400 text-2xl mt-1">04</span>
+                                <p class="text-zinc-200">Validar la viabilidad tecnológica de posibles soluciones, considerando las preferencias del propietario.</p>
+                            </div>
+                            <div class="bg-zinc-900 rounded-2xl p-5 flex gap-4 items-start">
+                                <span class="text-emerald-400 text-2xl mt-1">05</span>
+                                <p class="text-zinc-200">Diseñar mockups interactivos y funcionales que modelen la solución propuesta.</p>
+                            </div>
+                            <div class="bg-zinc-900 rounded-2xl p-5 flex gap-4 items-start">
+                                <span class="text-emerald-400 text-2xl mt-1">06</span>
+                                <p class="text-zinc-200">Documentar todo el proceso de análisis, diseño y desarrollo.</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Metodología",
+                content: `
+                    <div class="max-w-5xl mx-auto">
+                        <h2 class="text-xl font-bold text-emerald-400 uppercase tracking-widest mb-6">Cómo Llegamos a la Propuesta</h2>
+                        <div class="space-y-4">
+                            <div class="bg-zinc-900 rounded-2xl p-5 flex gap-5 items-start">
+                                <div class="min-w-[44px] h-11 bg-emerald-600 rounded-xl flex items-center justify-center font-bold text-lg">1</div>
+                                <div>
+                                    <h3 class="font-semibold text-lg text-white mb-1">Investigación Previa</h3>
+                                    <p class="text-zinc-400">Se estableció una base teórica sobre el funcionamiento estándar de una papelería, los tipos de productos y las clasificaciones comunes.</p>
+                                </div>
+                            </div>
+                            <div class="bg-zinc-900 rounded-2xl p-5 flex gap-5 items-start">
+                                <div class="min-w-[44px] h-11 bg-emerald-600 rounded-xl flex items-center justify-center font-bold text-lg">2</div>
+                                <div>
+                                    <h3 class="font-semibold text-lg text-white mb-1">Diseño de Entrevista</h3>
+                                    <p class="text-zinc-400">Se formularon preguntas clave enfocadas en cuatro pilares: <strong class="text-zinc-300">flujo de ventas, registro de inventario, proceso en devoluciones y viabilidad tecnológica.</strong></p>
+                                </div>
+                            </div>
+                            <div class="bg-zinc-900 rounded-2xl p-5 flex gap-5 items-start">
+                                <div class="min-w-[44px] h-11 bg-emerald-600 rounded-xl flex items-center justify-center font-bold text-lg">3</div>
+                                <div>
+                                    <h3 class="font-semibold text-lg text-white mb-1">Trabajo de Campo</h3>
+                                    <p class="text-zinc-400">Visita presencial y entrevista al dueño del negocio (<strong class="text-zinc-300">Sr. Jesús</strong>) para contrastar la teoría con la realidad operativa.</p>
+                                </div>
+                            </div>
+                            <div class="bg-zinc-900 rounded-2xl p-5 flex gap-5 items-start">
+                                <div class="min-w-[44px] h-11 bg-emerald-600 rounded-xl flex items-center justify-center font-bold text-lg">4</div>
+                                <div>
+                                    <h3 class="font-semibold text-lg text-white mb-1">Análisis de Necesidades</h3>
+                                    <p class="text-zinc-400">Se detecta que un sistema POS tradicional <strong class="text-zinc-300">entorpece las ventas rápidas</strong> (cuello de botella) y que el control de inventario actual es <strong class="text-zinc-300">100% visual</strong>.</p>
+                                </div>
+                            </div>
+                            <div class="bg-emerald-900/40 border border-emerald-600/40 rounded-2xl p-5 flex gap-5 items-start">
+                                <div class="min-w-[44px] h-11 bg-emerald-500 rounded-xl flex items-center justify-center font-bold text-lg text-black">5</div>
+                                <div>
+                                    <h3 class="font-semibold text-lg text-emerald-300 mb-1">Decisión Técnica</h3>
+                                    <p class="text-zinc-400">A petición del dueño, quien prefiere operar desde su celular, se opta por diseñar una <strong class="text-white">aplicación web local y sencilla</strong> enfocada únicamente en resolver el problema de desabasto y registro de encargos.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Hallazgos Clave",
+                content: `
+                    <div class="max-w-5xl mx-auto">
+                        <h2 class="text-xl font-bold text-emerald-400 uppercase tracking-widest mb-6">Hallazgos Clave del Análisis</h2>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-zinc-900 rounded-2xl p-5 flex gap-4 items-start">
+                                <span class="text-2xl">⚡</span>
+                                <div>
+                                    <h3 class="font-semibold text-white mb-1">Flujo de atención al cliente</h3>
+                                    <p class="text-zinc-400 text-sm">Directo y rápido: saludo, servicio, cobro. Sin demoras.</p>
+                                </div>
+                            </div>
+                            <div class="bg-zinc-900 rounded-2xl p-5 flex gap-4 items-start">
+                                <span class="text-2xl">📝</span>
+                                <div>
+                                    <h3 class="font-semibold text-white mb-1">Registro de ventas</h3>
+                                    <p class="text-zinc-400 text-sm">Manual, registrando únicamente el precio, sin descontar ítems de un inventario digital.</p>
+                                </div>
+                            </div>
+                            <div class="bg-zinc-900 rounded-2xl p-5 flex gap-4 items-start">
+                                <span class="text-2xl">👁️</span>
+                                <div>
+                                    <h3 class="font-semibold text-white mb-1">Control visual del inventario</h3>
+                                    <p class="text-zinc-400 text-sm">La disponibilidad y necesidad de reabastecimiento se calculan mediante revisión visual.</p>
+                                </div>
+                            </div>
+                            <div class="bg-emerald-900/40 border border-emerald-600/40 rounded-2xl p-5 flex gap-4 items-start">
+                                <span class="text-2xl">🖨️</span>
+                                <div>
+                                    <h3 class="font-semibold text-emerald-300 mb-1">Servicio estrella</h3>
+                                    <p class="text-zinc-400 text-sm">Las impresiones representan el producto prioritario y de mayor movimiento.</p>
+                                </div>
+                            </div>
+                            <div class="bg-zinc-900 rounded-2xl p-5 flex gap-4 items-start">
+                                <span class="text-2xl">🐢</span>
+                                <div>
+                                    <h3 class="font-semibold text-white mb-1">Procesos lentos</h3>
+                                    <p class="text-zinc-400 text-sm">Los trámites escolares o servicios gubernamentales son los que más tiempo consumen.</p>
+                                </div>
+                            </div>
+                            <div class="bg-emerald-900/40 border border-emerald-600/40 rounded-2xl p-5 flex gap-4 items-start">
+                                <span class="text-2xl">📱</span>
+                                <div>
+                                    <h3 class="font-semibold text-emerald-300 mb-1">Necesidad tecnológica</h3>
+                                    <p class="text-zinc-400 text-sm">El propietario requiere una solución ágil que no ralentice la operación y sea operable desde un teléfono móvil.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Reglas de Negocio",
+                content: `
+                    <div class="split-slide max-w-6xl mx-auto">
+                        <div class="content-side">
+                            <h1 class="text-3xl title-font font-bold mb-6">Reglas de Negocio</h1>
+                            <ul class="space-y-5 text-lg">
+                                <li>• Cliente en mostrador tiene prioridad absoluta</li>
+                                <li>• Pedidos especiales requieren anticipo mínimo del 50%</li>
+                                <li>• Productos de alta rotación nunca deben llegar a cero</li>
+                                <li>• Precios se revisan quincenalmente</li>
+                            </ul>
+                        </div>
+                        <div class="image-side">
+                            <img src="images/image6.png" alt="Políticas hacia el Cliente y Reglas de Negocio">
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Problema Detectado",
+                content: `
+                    <div class="max-w-5xl mx-auto">
+                        <div class="bg-red-950/60 border border-red-500/60 rounded-2xl p-8 mb-6">
+                            <div class="flex gap-4 items-start mb-5">
+                                <span class="text-4xl">🚨</span>
+                                <div>
+                                    <h2 class="text-2xl font-bold text-red-400 mb-3">Problema Principal</h2>
+                                    <p class="text-lg text-zinc-200 leading-relaxed mb-4">
+                                        El principal problema identificado es el <strong class="text-white">descontrol de mercancía faltante y pedidos especiales</strong>. Al depender exclusivamente de la memoria y la revisión visual durante los momentos de menor afluencia, existe un alto riesgo de olvidos.
+                                    </p>
+                                    <p class="text-lg text-zinc-300 leading-relaxed">
+                                        Esto se traduce directamente en <strong class="text-red-300">pérdida de ventas</strong> y un <strong class="text-red-300">servicio deficiente</strong> ante clientes que solicitan artículos específicos.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 mt-4">
+                                <div class="bg-red-900/30 rounded-xl p-4 flex gap-3 items-center">
+                                    <span class="text-2xl">💬</span>
+                                    <p class="text-zinc-300 italic">&ldquo;Se me olvidó comprar&rdquo;</p>
+                                </div>
+                                <div class="bg-red-900/30 rounded-xl p-4 flex gap-3 items-center">
+                                    <span class="text-2xl">💬</span>
+                                    <p class="text-zinc-300 italic">&ldquo;Tendremos la próxima vez que se surta&rdquo;</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-emerald-900/30 border border-emerald-600/40 rounded-2xl p-6 flex gap-4 items-start">
+                            <span class="text-3xl">💡</span>
+                            <div>
+                                <h3 class="font-semibold text-emerald-300 text-lg mb-2">Oportunidad de Mejora</h3>
+                                <p class="text-zinc-300 leading-relaxed">La oportunidad de mejora radica en proporcionar una herramienta <strong class="text-white">muy simple, rápida y utilizable desde el móvil</strong>, que permita al encargado registrar inmediatamente lo que falta o lo que se encarga, <strong class="text-white">sin interrumpir el flujo de ventas</strong>.</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Solución Propuesta",
+                content: `
+                    <div class="max-w-5xl mx-auto">
+                        <p class="text-zinc-300 mb-6 text-lg leading-relaxed">Se propone el desarrollo de una <strong class="text-white">aplicación web local</strong> que funcione a manera de gestor de listas, organizada en dos funciones principales:</p>
+                        <div class="grid grid-cols-3 gap-5 mb-6">
+                            <div class="bg-zinc-900 rounded-2xl p-6 flex flex-col gap-3">
+                                <div class="text-4xl">📋</div>
+                                <h3 class="font-bold text-lg text-white">Productos Faltantes</h3>
+                                <p class="text-zinc-400 text-sm">Un sistema CRUD para registrar artículos agotados.</p>
+                                <ul class="space-y-2 text-sm text-zinc-400 mt-2">
+                                    <li class="flex gap-2 items-start"><span class="text-emerald-500 mt-0.5">›</span> Nombre del producto</li>
+                                    <li class="flex gap-2 items-start"><span class="text-emerald-500 mt-0.5">›</span> Disponibilidad (en stock)</li>
+                                    <li class="flex gap-2 items-start"><span class="text-emerald-500 mt-0.5">›</span> Nivel de urgencia (alta, media, baja)</li>
+                                    <li class="flex gap-2 items-start"><span class="text-emerald-500 mt-0.5">›</span> Foto (opcional)</li>
+                                </ul>
+                            </div>
+                            <div class="bg-zinc-900 rounded-2xl p-6 flex flex-col gap-3">
+                                <div class="text-4xl">🛒</div>
+                                <h3 class="font-bold text-lg text-white">Pedidos Nuevos</h3>
+                                <p class="text-zinc-400 text-sm leading-relaxed">Sección para registrar encargos de clientes (ej. &ldquo;cuadernos para dibujar&rdquo;) y la <strong class="text-zinc-300">cantidad de veces solicitada</strong>.</p>
+                                <p class="text-zinc-500 text-xs mt-2">Crea un margen de venta seguro y evita stock estancado.</p>
+                            </div>
+                            <div class="bg-emerald-900/50 border border-emerald-600/50 rounded-2xl p-6 flex flex-col gap-3">
+                                <div class="text-4xl">📄</div>
+                                <h3 class="font-bold text-lg text-emerald-300">Exportación</h3>
+                                <p class="text-zinc-400 text-sm leading-relaxed">Capacidad de generar un reporte en <strong class="text-white">PDF o JPG</strong> con ambas listas.</p>
+                                <p class="text-zinc-500 text-xs mt-2">Facilita la orden de compra al proveedor al final del día.</p>
+                            </div>
+                        </div>
+                        <div class="bg-zinc-900 border-l-4 border-emerald-500 rounded-2xl p-5 flex gap-4 items-center">
+                            <span class="text-3xl">✨</span>
+                            <p class="text-zinc-300 leading-relaxed"><strong class="text-white">Gran valor práctico:</strong> esta solución organiza la información de compras <strong class="text-emerald-400">sin la carga administrativa de un inventario completo</strong>.</p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Mockup Interactivo",
+                content: `
+                    <div class="split-slide max-w-6xl mx-auto">
+                        <div class="content-side">
+                            <h1 class="text-3xl title-font font-bold mb-6">Mockup Interactivo</h1>
+                            <p class="text-lg">Diseño minimalista y mobile-first pensado para uso rápido durante la atención al cliente.</p>
+                            <ul class="space-y-3 mt-6 text-zinc-300">
+                                <li class="flex gap-3"><span class="text-emerald-400">→</span> Vista de Productos Faltantes con nivel de urgencia</li>
+                                <li class="flex gap-3"><span class="text-emerald-400">→</span> Registro de Pedidos Nuevos de clientes</li>
+                                <li class="flex gap-3"><span class="text-emerald-400">→</span> Exportación a PDF para proveedores</li>
+                            </ul>
+                        </div>
+                        <div class="image-side">
+                            <img src="images/image7.png" alt="Mockup interactivo de la app de gestión de inventario">
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Herramientas Utilizadas",
+                content: `
+                    <div class="split-slide max-w-6xl mx-auto">
+                        <div class="content-side">
+                            <h1 class="text-3xl title-font font-bold mb-8">Herramientas Utilizadas</h1>
+                            <table class="w-full text-left">
+                                <thead><tr class="border-b border-zinc-700"><th class="py-4">Herramienta</th><th class="py-4">Uso</th></tr></thead>
+                                <tbody class="text-zinc-300">
+                                    <tr class="border-b border-zinc-800"><td class="py-5">Canva</td><td>Diseño visual y mockups</td></tr>
+                                    <tr class="border-b border-zinc-800"><td class="py-5">HTML / CSS / JavaScript</td><td>Mockup funcional</td></tr>
+                                    <tr class="border-b border-zinc-800"><td class="py-5">LocalStorage</td><td>Persistencia de datos</td></tr>
+                                    <tr class="border-b border-zinc-800"><td class="py-5">Jira</td><td>Planificación y gestión de tareas</td></tr>
+                                    <tr><td class="py-5">GitHub</td><td>Control de versiones</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="image-side">
+                            <img src="images/image10.png" alt="Listado de tareas estimadas en Jira">
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Evidencia de Campo",
+                content: `
+                    <div class="split-slide max-w-6xl mx-auto">
+                        <div class="content-side">
+                            <h1 class="text-3xl title-font font-bold mb-6">Evidencia de Campo</h1>
+                            <p class="text-lg mb-6">Visita presencial y entrevista directa con el propietario para levantar requerimientos reales.</p>
+                            <ul class="space-y-4 text-zinc-300">
+                                <li class="flex gap-3"><span class="text-emerald-400">📍</span> Calle Michoacán Ote 5, Villa Milpa Alta, CDMX</li>
+                                <li class="flex gap-3"><span class="text-emerald-400">📷</span> Registro fotográfico del establecimiento</li>
+                                <li class="flex gap-3"><span class="text-emerald-400">🗺️</span> Geolocalización verificada en Google Maps</li>
+                                <li class="flex gap-3"><span class="text-emerald-400">🎙️</span> Entrevista con el dueño para identificar necesidades</li>
+                            </ul>
+                        </div>
+                        <div class="image-side">
+                            <img src="images/image9.png" alt="Foto real de la Papelería 81 Joma y su ubicación">
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "Resultados",
+                content: `
+                    <div class="max-w-4xl mx-auto">
+                        <h1 class="text-4xl title-font font-bold mb-10">Resultados Alcanzados</h1>
+                        <ul class="space-y-6 text-lg">
+                            <li class="flex gap-4"><span class="text-emerald-500 text-2xl">✓</span> Comprensión profunda del negocio real</li>
+                            <li class="flex gap-4"><span class="text-emerald-500 text-2xl">✓</span> Mockup funcional que respeta el flujo rápido de ventas</li>
+                            <li class="flex gap-4"><span class="text-emerald-500 text-2xl">✓</span> Solución práctica y viable para el dueño</li>
+                        </ul>
+                    </div>
+                `
+            },
+            {
+                title: "Conclusiones",
+                content: `
+                    <div class="split-slide max-w-6xl mx-auto">
+                        <div class="content-side">
+                            <h1 class="text-3xl title-font font-bold mb-8">Conclusiones</h1>
+                            <p class="text-xl leading-relaxed mb-8">"La tecnología debe adaptarse a la realidad del negocio, no al revés."</p>
+                            <p class="text-lg text-emerald-400 mb-8">Una solución ligera y móvil resuelve el problema crítico respetando la dinámica exitosa del establecimiento.</p>
+                            <p class="text-zinc-400 text-lg">¡Gracias por su atención!</p>
+                        </div>
+                        <div class="image-side">
+                            <img src="images/image4.png" alt="Gracias por su atención - Equipo Ingeniebrios">
+                        </div>
+                    </div>
+                `
+            }
+        ];
+
+        let currentIndex = 0;
+
+        function renderTabs() {
+            const container = document.getElementById('tabs');
+            container.innerHTML = '';
+            slidesData.forEach((slide, index) => {
+                const btn = document.createElement('button');
+                btn.className = `nav-tab px-5 py-3 text-sm rounded-3xl whitespace-nowrap ${index === currentIndex ? 'active bg-zinc-800' : 'hover:bg-zinc-800'}`;
+                btn.textContent = slide.title;
+                btn.onclick = () => goToSlide(index);
+                container.appendChild(btn);
+            });
+        }
+
+        function renderSlide() {
+            const container = document.getElementById('slide-container');
+            const slide = slidesData[currentIndex];
+
+            container.innerHTML = `
+                <div class="h-full flex flex-col">
+                    <div class="mb-8">
+                        <div class="inline-flex items-center gap-3 bg-zinc-900 px-8 py-4 rounded-3xl">
+                            <span class="text-emerald-400 text-3xl">📌</span>
+                            <h1 class="text-4xl title-font font-bold">${slide.title}</h1>
+                        </div>
+                    </div>
+                    <div class="content-area flex-1">
+                        ${slide.content}
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('current-slide').textContent = currentIndex + 1;
+        }
+
+        function goToSlide(index) {
+            if (index < 0 || index >= slidesData.length) return;
+            currentIndex = index;
+            renderTabs();
+            renderSlide();
+        }
+
+        function nextSlide() {
+            goToSlide(currentIndex + 1);
+        }
+
+        function prevSlide() {
+            goToSlide(currentIndex - 1);
+        }
+
+        // --- Pantalla en negro (tecla B) ---
+        let blackoutActive = false;
+        const blackoutOverlay = document.createElement('div');
+        blackoutOverlay.id = 'blackout-overlay';
+        Object.assign(blackoutOverlay.style, {
+            display: 'none', position: 'fixed', inset: '0',
+            background: '#000', zIndex: '9999', cursor: 'pointer'
+        });
+        blackoutOverlay.onclick = () => toggleBlackout();
+        document.body.appendChild(blackoutOverlay);
+
+        function toggleBlackout() {
+            blackoutActive = !blackoutActive;
+            blackoutOverlay.style.display = blackoutActive ? 'block' : 'none';
+        }
+
+        // --- Detector de teclas del puntero (activa/desactiva con K) ---
+        let keyDetectorOn = false;
+        const keyDetector = document.createElement('div');
+        keyDetector.id = 'key-detector';
+        Object.assign(keyDetector.style, {
+            display: 'none', position: 'fixed', bottom: '24px', right: '24px',
+            background: 'rgba(16,185,129,0.95)', color: '#000', fontFamily: 'monospace',
+            fontSize: '18px', fontWeight: 'bold', padding: '14px 24px',
+            borderRadius: '14px', zIndex: '99999', boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
+            minWidth: '200px', textAlign: 'center'
+        });
+        keyDetector.innerHTML = 'Presiona un botón del puntero...';
+        document.body.appendChild(keyDetector);
+
+        function showKeyDetector(on) {
+            keyDetectorOn = on;
+            keyDetector.style.display = on ? 'block' : 'none';
+            if (on) keyDetector.innerHTML = '📡 Presiona un botón del puntero...';
+        }
+
+        // Navegación con teclado y puntero/presenter (Leafgreen y otros)
+        document.addEventListener('keydown', (e) => {
+
+            // Mostrar detector con K
+            if (e.key === 'k' || e.key === 'K') {
+                showKeyDetector(!keyDetectorOn);
+                return;
+            }
+
+            // Mostrar qué tecla llega (modo detector)
+            if (keyDetectorOn) {
+                keyDetector.innerHTML = `📡 Tecla detectada:<br><span style="font-size:22px">${e.key}</span><br><span style="font-size:12px;opacity:0.7">code: ${e.code} | keyCode: ${e.keyCode}</span>`;
+            }
+
+            // === SIGUIENTE DIAPOSITIVA ===
+            // PageDown (Logitech, Leafgreen, etc.)
+            // ArrowRight, Espacio (teclado)
+            // Period (algunos presentadores baratos)
+            // F5 (modo inicio PowerPoint en algunos punteros)
+            if (['PageDown', 'ArrowRight', ' ', 'Period', '.'].includes(e.key)) {
+                e.preventDefault();
+                if (blackoutActive) { toggleBlackout(); return; }
+                nextSlide();
+                return;
+            }
+
+            // === DIAPOSITIVA ANTERIOR ===
+            // PageUp (Logitech, Leafgreen, etc.)
+            // ArrowLeft, Comma (algunos presentadores baratos)
+            if (['PageUp', 'ArrowLeft', 'Comma', ','].includes(e.key)) {
+                e.preventDefault();
+                if (blackoutActive) { toggleBlackout(); return; }
+                prevSlide();
+                return;
+            }
+
+            // Pantalla completa (F o F5)
+            if (e.key === 'f' || e.key === 'F' || e.key === 'F5') {
+                e.preventDefault();
+                toggleFullscreen();
+                return;
+            }
+
+            // Pantalla negra (B = blackout)
+            if (e.key === 'b' || e.key === 'B') {
+                toggleBlackout();
+                return;
+            }
+
+            // Tema claro/oscuro (T)
+            if (e.key === 't' || e.key === 'T') {
+                toggleTheme();
+                return;
+            }
+
+            // Escape: sale del blackout
+            if (e.key === 'Escape' && blackoutActive) {
+                toggleBlackout();
+            }
+        });
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    alert(`Error al activar pantalla completa: ${err.message}`);
+                });
+                document.body.classList.add('fullscreen-mode');
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                    document.body.classList.remove('fullscreen-mode');
+                }
+            }
+        }
+
+        // ===== TOGGLE DE TEMA =====
+        function toggleTheme() {
+            const isLight = document.body.classList.toggle('light-theme');
+            const btn = document.getElementById('btn-theme');
+            btn.textContent = isLight ? '🌙' : '☀️';
+            btn.title = isLight ? 'Cambiar a tema oscuro (T)' : 'Cambiar a tema claro (T)';
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        }
+
+        // Detectar cambio de pantalla completa (por si se sale con ESC)
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                document.body.classList.remove('fullscreen-mode');
+            }
+        });
+
+        // Inicialización
+        window.onload = () => {
+            document.getElementById('total-slides').textContent = slidesData.length;
+            renderTabs();
+            renderSlide();
+            // Restaurar tema guardado
+            if (localStorage.getItem('theme') === 'light') {
+                document.body.classList.add('light-theme');
+                const btn = document.getElementById('btn-theme');
+                if (btn) { btn.textContent = '🌙'; btn.title = 'Cambiar a tema oscuro (T)'; }
+            }
+        };
+    </script>
+</body>
+
+</html>
